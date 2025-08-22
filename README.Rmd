@@ -49,9 +49,7 @@ generate_mesh_html()
 # This creates several files in your working directory:
 # - eiEAM_original_mesh.html
 # - eiEAM_remeshed_4mm.html
-# - eiEAM_remeshed_2mm.html
 # - eiEAM_mesh_comparison.html
-# - eiEAM_three_way_comparison.html
 ```
 
 ## Quick Start Example
@@ -94,10 +92,10 @@ launch_mesh_viewer()
 - `lognormal_mean()`, `lognormal_var()`, `lognormal_sd()` - Log-normal distribution statistics
 - `pooled_sd()` - Calculate pooled standard deviation
 - `mode()` - Statistical mode
+- `create_summary_table()` - Create formatted summary statistics tables
 
 ### Data Management
 - `combine_rds_pacing_dir_v2()` - Combine dataframes across pacing directions
-- `create_summary_table()` - Create formatted summary tables
 
 ## Interactive Visualization Requirements
 
