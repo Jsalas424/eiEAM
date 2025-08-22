@@ -3,7 +3,7 @@ Title: Electroanatomical Mapping Post-Processing Tools
 Version: 0.1
 Authors@R: 
     person("Jonathan", "Salas", , "Jsalas424@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0009-0001-4508-7336"))
-Description: Tools for EAM data analysis including nearest neighbor algorithms, mesh visualization, and statistical utilities.
+Description: eiEAM - Old Mc'Tschabrunn had a farm, eee eye eee eye mapping techniques emphasizing high-density acquisition has led to EP suffering from "Big Data" challenges. This library includes tools for accurate and reproducible analysis of high-density electroanatomic mapping (EAM) data including nearest neighbors co-registration, mesh reprocessing, and statistical analyses.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
