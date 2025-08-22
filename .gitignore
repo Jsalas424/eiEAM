@@ -4,3 +4,7 @@
 .httr-oauth
 .DS_Store
 .quarto
+*.html
+eiEAM_original_mesh.html
+eiEAM_remeshed_4mm.html
+eiEAM_mesh_comparison.html

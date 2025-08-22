@@ -1,6 +1,6 @@
 ^renv$
 ^renv\.lock$
-^cv\.tools\.Rproj$
+^eiEAM\.tools\.Rproj$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.git$
