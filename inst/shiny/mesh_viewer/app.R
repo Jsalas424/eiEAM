@@ -253,8 +253,6 @@ ui <- dashboardPage(
                              plotlyOutput("original_plot", height = "500px")),
                     tabPanel("Remeshed",
                              plotlyOutput("remeshed_plot", height = "500px")),
-                    tabPanel("Comparison",
-                             plotlyOutput("comparison_plot", height = "500px")),
                     tabPanel("Statistics",
                              br(),
                              DT::dataTableOutput("stats_table"))
@@ -358,7 +356,6 @@ ui <- dashboardPage(
                   tags$table(class = "table table-striped",
                              tags$tr(tags$th("Key"), tags$th("Action")),
                              tags$tr(tags$td("R"), tags$td("Reset camera view")),
-                             tags$tr(tags$td("W"), tags$td("Toggle wireframe")),
                              tags$tr(tags$td("Space"), tags$td("Play/pause rotation"))
                   )
                 )
@@ -695,19 +692,30 @@ server <- function(input, output, session) {
     }
   })
   
-  output$comparison_plot <- renderPlotly({
-    if (is.null(values$remeshed_mesh)) {
-      create_empty_plot("Remeshing required for comparison")
-    } else {
-      p1 <- create_mesh_plot(values$original_mesh, "Original")
-      p2 <- create_mesh_plot(values$remeshed_mesh, "Remeshed",
-                             get_mesh_color(input$global_colorscheme, "secondary"))
-      
-      subplot(p1, p2, nrows = 1, shareX = TRUE, shareY = TRUE) |> 
-        layout(title = list(text = "Mesh Comparison", x = 0.5, xanchor = "center"))
+  # Output: Tables
+  output$stats_table <- DT::renderDataTable({
+    DT::datatable(values$current_stats,
+                  options = list(
+                    dom = 't',
+                    paging = FALSE,
+                    searching = FALSE
+                  ),
+                  rownames = FALSE)
+  })
+  
+  output$batch_results <- DT::renderDataTable({
+    if (!is.null(values$batch_results)) {
+      DT::datatable(values$batch_results,
+                    options = list(
+                      pageLength = 10,
+                      dom = 'Bfrtip'
+                    ),
+                    rownames = FALSE) |> 
+        DT::formatRound(columns = c('VertexRatio', 'FaceRatio'), digits = 3)
     }
   })
   
+  # Output: Batch comparison plot
   output$batch_comparison <- renderPlotly({
     if (is.null(values$batch_results)) {
       create_empty_plot("Run batch processing to see results")
@@ -730,29 +738,6 @@ server <- function(input, output, session) {
           ),
           hovermode = 'x unified'
         )
-    }
-  })
-  
-  # Output: Tables
-  output$stats_table <- DT::renderDataTable({
-    DT::datatable(values$current_stats,
-                  options = list(
-                    dom = 't',
-                    paging = FALSE,
-                    searching = FALSE
-                  ),
-                  rownames = FALSE)
-  })
-  
-  output$batch_results <- DT::renderDataTable({
-    if (!is.null(values$batch_results)) {
-      DT::datatable(values$batch_results,
-                    options = list(
-                      pageLength = 10,
-                      dom = 'Bfrtip'
-                    ),
-                    rownames = FALSE) |> 
-        DT::formatRound(columns = c('VertexRatio', 'FaceRatio'), digits = 3)
     }
   })
   
