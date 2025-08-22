@@ -3,9 +3,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-Old Mc'Tschabrunn had a farm.
-
-This package contains functions for post-processing of electroanatomic mapping data.
+eiEAM - Old Mc'Tschabrunn had a farm, eee eye eee eye mapping techniques emphasizing high-density acquisition has led to EP suffering from "Big Data" challenges. This library includes tools for accurate and reproducible analysis of high-density electroanatomic mapping (EAM) data including nearest neighbors co-registration, mesh reprocessing, and statistical analyses.
 
 ## Installation
 
@@ -140,7 +138,7 @@ If you use eiEAM in your research, please cite:
 
 ```
 Salas J (2025). eiEAM: Electroanatomical Mapping Post-Processing Tools.
-R package version 0.1. https://github.com/yourusername/eiEAM
+R package version 0.1. https://github.com/Jsalas424/eiEAM
 ```
 
 ## License
