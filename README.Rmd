@@ -142,7 +142,7 @@ If you use eiEAM in your research, please cite:
 
 ```
 Salas J (2025). eiEAM: Electroanatomical Mapping Post-Processing Tools.
-R package version 0.1. https://github.com/yourusername/eiEAM
+R package version 0.1. https://github.com/jsalas424/eiEAM
 ```
 
 ## License
