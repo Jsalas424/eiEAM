@@ -28,9 +28,9 @@ load_example_mesh <- function() {
       }
       
       # Check data dimensions
-      cat("Data structure validation:\n")
-      cat("  Vertices matrix dimensions:", dim(mesh_data$vertices), "\n")
-      cat("  Faces matrix dimensions:", dim(mesh_data$faces), "\n")
+      cat("Data structure validation:\n") |> 
+        cat("  Vertices matrix dimensions:", dim(mesh_data$vertices), "\n") |> 
+        cat("  Faces matrix dimensions:", dim(mesh_data$faces), "\n")
       
       # Ensure vertices is a matrix with 3 columns (x, y, z)
       vertices <- mesh_data$vertices
@@ -96,8 +96,8 @@ load_example_mesh <- function() {
   
   # If no file found, create a default mesh
   cat("No mesh file found. Creating default icosahedron mesh...\n")
-  mesh <- rgl::icosahedron3d()
-  mesh <- rgl::scale3d(mesh, 10, 10, 10)  # Scale to reasonable size
+  mesh <- rgl::icosahedron3d() |> 
+    rgl::scale3d(10, 10, 10)  # Scale to reasonable size
   
   cat(sprintf("Created default mesh: %d vertices, %d faces\n", 
               ncol(mesh$vb), ncol(mesh$it)))
@@ -226,25 +226,6 @@ ui <- dashboardPage(
                               value = 90,
                               step = 10),
                   
-                  h4("Advanced Options"),
-                  checkboxInput("surf_dist_check",
-                                "Surface Distance Check",
-                                value = FALSE),
-                  
-                  checkboxInput("adaptive",
-                                "Adaptive Remeshing",
-                                value = FALSE),
-                  
-                  conditionalPanel(
-                    condition = "input.adaptive == true",
-                    sliderInput("max_surf_dist",
-                                "Max Surface Distance:",
-                                min = 0.5,
-                                max = 5,
-                                value = 2,
-                                step = 0.5)
-                  ),
-                  
                   br(),
                   actionButton("remesh", 
                                "Perform Remeshing",
@@ -360,13 +341,7 @@ ui <- dashboardPage(
                     tags$dd("Number of remeshing iterations to perform"),
                     
                     tags$dt("Feature Angle"),
-                    tags$dd("Angle threshold for preserving sharp features"),
-                    
-                    tags$dt("Surface Distance Check"),
-                    tags$dd("When enabled, maintains higher fidelity to the original mesh"),
-                    
-                    tags$dt("Adaptive Remeshing"),
-                    tags$dd("Generates different triangle sizes based on mesh curvature")
+                    tags$dd("Angle threshold for preserving sharp features")
                   ),
                   
                   h4("3. Batch Processing"),
@@ -512,7 +487,7 @@ server <- function(input, output, session) {
       color <- get_mesh_color(input$global_colorscheme, "primary")
     }
     
-    p <- plot_ly() %>%
+    p <- plot_ly() |> 
       add_mesh(
         name = "Mesh Surface",
         x = t(mesh$vb[1:3, ])[, 1],
@@ -537,7 +512,7 @@ server <- function(input, output, session) {
     
     if (input$global_wireframe) {
       wireframe_coords <- create_wireframe_mesh(mesh)
-      p <- p %>%
+      p <- p |> 
         add_trace(
           name = "Wireframe",
           data = wireframe_coords,
@@ -550,7 +525,7 @@ server <- function(input, output, session) {
         )
     }
     
-    p %>%
+    p |> 
       layout(
         title = title,
         showlegend = TRUE,
@@ -579,10 +554,7 @@ server <- function(input, output, session) {
           mesh3d_obj = values$original_mesh,
           target_edge_length = input$edge_length,
           iterations = input$iterations,
-          feature_angle_deg = input$feature_angle,
-          surf_dist_check = input$surf_dist_check,
-          adaptive = input$adaptive,
-          max_surf_dist = ifelse(input$adaptive, input$max_surf_dist, 2)
+          feature_angle_deg = input$feature_angle
         )
         
         incProgress(0.6, detail = "Finalizing...")
@@ -636,9 +608,7 @@ server <- function(input, output, session) {
           mesh3d_obj = values$original_mesh,
           target_edge_length = edge_lengths[i],
           iterations = input$iterations,
-          feature_angle_deg = input$feature_angle,
-          surf_dist_check = input$surf_dist_check,
-          adaptive = input$adaptive
+          feature_angle_deg = input$feature_angle
         )
         
         results[[i]] <- data.frame(
@@ -689,7 +659,7 @@ server <- function(input, output, session) {
   
   output$remeshed_plot <- renderPlotly({
     if (is.null(values$remeshed_mesh)) {
-      plotly_empty() %>%
+      plotly_empty() |> 
         layout(
           title = "Click 'Perform Remeshing' to generate",
           xaxis = list(visible = FALSE),
@@ -704,14 +674,14 @@ server <- function(input, output, session) {
   
   output$comparison_plot <- renderPlotly({
     if (is.null(values$remeshed_mesh)) {
-      plotly_empty() %>%
+      plotly_empty() |> 
         layout(title = "Remeshing required for comparison")
     } else {
       p1 <- create_mesh_plot(values$original_mesh, "Original")
       p2 <- create_mesh_plot(values$remeshed_mesh, "Remeshed",
                              get_mesh_color(input$global_colorscheme, "secondary"))
       
-      subplot(p1, p2, nrows = 1, shareX = TRUE, shareY = TRUE) %>%
+      subplot(p1, p2, nrows = 1, shareX = TRUE, shareY = TRUE) |> 
         layout(title = "Mesh Comparison")
     }
   })
@@ -720,13 +690,13 @@ server <- function(input, output, session) {
     if (is.null(values$batch_results)) {
       plotly_empty()
     } else {
-      plot_ly(values$batch_results) %>%
+      plot_ly(values$batch_results) |> 
         add_trace(x = ~EdgeLength, y = ~Vertices, 
                   type = 'scatter', mode = 'lines+markers',
-                  name = 'Vertices', yaxis = 'y') %>%
+                  name = 'Vertices', yaxis = 'y') |> 
         add_trace(x = ~EdgeLength, y = ~Faces, 
                   type = 'scatter', mode = 'lines+markers',
-                  name = 'Faces', yaxis = 'y2') %>%
+                  name = 'Faces', yaxis = 'y2') |> 
         layout(
           title = "Batch Processing Results",
           xaxis = list(title = "Edge Length (mm)"),
@@ -759,7 +729,7 @@ server <- function(input, output, session) {
                       pageLength = 10,
                       dom = 'Bfrtip'
                     ),
-                    rownames = FALSE) %>%
+                    rownames = FALSE) |> 
         DT::formatRound(columns = c('VertexRatio', 'FaceRatio'), digits = 3)
     }
   })

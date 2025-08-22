@@ -6,7 +6,7 @@
 \alias{eiEAM-package}
 \title{eiEAM: Electroanatomical Mapping Post-Processing Tools}
 \description{
-Tools for EAM data analysis including nearest neighbor algorithms, mesh visualization, and statistical utilities.
+eiEAM - Old Mc'Tschabrunn had a farm, eee eye eee eye mapping techniques emphasizing high-density acquisition has led to EP suffering from "Big Data" challenges. This library includes tools for accurate and reproducible analysis of high-density electroanatomic mapping (EAM) data including nearest neighbors co-registration, mesh reprocessing, and statistical analyses.
 }
 \author{
 \strong{Maintainer}: Jonathan Salas \email{Jsalas424@gmail.com} (\href{https://orcid.org/0009-0001-4508-7336}{ORCID})
