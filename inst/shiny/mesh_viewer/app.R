@@ -583,7 +583,7 @@ server <- function(input, output, session) {
                     res$roi_vertex_count, 
                     res$face_count,
                     paste0(round((1 - res$roi_vertex_count/res$original_vertex_count) * 100, 1), "%"),
-                    paste0(round((res$face_count/ncol(values$original_mesh$it) - 1) * 100, 1), "%"))
+                    paste0(round((1 - res$face_count / ncol(values$original_mesh$it)) * 100, 1), "%"))
         )
         
         incProgress(0.3, detail = "Complete!")
