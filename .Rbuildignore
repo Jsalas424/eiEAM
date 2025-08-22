@@ -1,0 +1,9 @@
+^renv$
+^renv\.lock$
+^cv\.tools\.Rproj$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.git$
+^\.gitignore$
+^README\.Rmd$
+^LICENSE\.md$

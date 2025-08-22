@@ -1,0 +1,25 @@
+Package: eiEAM
+Title: Electroanatomical Mapping Post-Processing Tools
+Version: 0.1
+Authors@R: 
+    person("Jonathan", "Salas", , "Jsalas424@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0009-0001-4508-7336"))
+Description: Tools for EAM data analysis including nearest neighbor algorithms, mesh visualization, and statistical utilities.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports:
+    dplyr,
+    dbscan,
+    rgl,
+    gtsummary,
+    gt,
+    rlang,
+    cli,
+    purrr
+Suggests:
+    Rvcg,
+    plotly,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+SystemRequirements: For 3D visualization features, OpenGL support may be required
