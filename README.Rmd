@@ -9,9 +9,9 @@ This package contains functions for post-processing of electroanatomic mapping d
 
 ## Installation
 
-```r
+```{r}
 # install.packages("devtools")
-devtools::install_github("yourusername/eiEAM")
+devtools::install_github("Jsalas424/eiEAM")
 ```
 
 ## Interactive Mesh Visualization 🎮
@@ -40,7 +40,7 @@ Features:
 
 Generate interactive HTML files that can be opened in any web browser:
 
-```r
+```{r}
 library(eiEAM)
 
 # Generate interactive HTML visualizations
@@ -56,7 +56,7 @@ generate_mesh_html()
 
 ## Quick Start Example
 
-```r
+```{r}
 library(eiEAM)
 library(rgl)
 library(Rvcg)
@@ -103,7 +103,7 @@ launch_mesh_viewer()
 
 For the interactive features, you'll need these additional packages:
 
-```r
+```{r}
 install.packages(c("shiny", "shinydashboard", "plotly", "DT", "htmlwidgets"))
 ```
 
@@ -117,7 +117,7 @@ install.packages(c("shiny", "shinydashboard", "plotly", "DT", "htmlwidgets"))
 
 Comprehensive documentation is available:
 
-```r
+```{r}
 # Package documentation
 ?eiEAM
 
@@ -142,7 +142,7 @@ If you use eiEAM in your research, please cite:
 
 ```
 Salas J (2025). eiEAM: Electroanatomical Mapping Post-Processing Tools.
-R package version 0.1. https://github.com/jsalas424/eiEAM
+R package version 0.1. https://github.com/yourusername/eiEAM
 ```
 
 ## License
