@@ -1,20 +1,3 @@
----
-output: github_document
----
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%",
-  warning = FALSE,
-  message = FALSE
-)
-```
-
 # eiEAM
 
 <!-- badges: start -->
@@ -26,154 +9,147 @@ This package contains functions for post-processing of electroanatomic mapping d
 
 ## Installation
 
-``` r
+```r
 # install.packages("devtools")
-devtools::install_local("~tbd/eiEAM")
+devtools::install_github("yourusername/eiEAM")
 ```
 
-## Example
+## Interactive Mesh Visualization 🎮
 
-This is a basic example which shows you how to solve a common problem:
+The eiEAM package includes powerful interactive 3D visualization tools. Since GitHub README files don't support interactive content, we provide two ways to explore the meshes interactively:
 
-```{r example}
+### Option 1: Shiny App (Recommended)
+
+Launch our full-featured Shiny application for real-time mesh manipulation:
+
+```r
+library(eiEAM)
+
+# Launch the interactive mesh viewer
+launch_mesh_viewer()
+```
+
+Features:
+- Real-time parameter adjustment
+- Side-by-side mesh comparison
+- Batch processing for multiple configurations
+- Export capabilities
+- Full documentation included
+
+### Option 2: Standalone HTML Files
+
+Generate interactive HTML files that can be opened in any web browser:
+
+```r
+library(eiEAM)
+
+# Generate interactive HTML visualizations
+generate_mesh_html()
+
+# This creates several files in your working directory:
+# - eiEAM_original_mesh.html
+# - eiEAM_remeshed_4mm.html
+# - eiEAM_remeshed_2mm.html
+# - eiEAM_mesh_comparison.html
+# - eiEAM_three_way_comparison.html
+```
+
+## Quick Start Example
+
+```r
 library(eiEAM)
 library(rgl)
 library(Rvcg)
-library(plotly)
-```
 
-```{r}
-mesh_obj <- list(faces = structure(c(1L, 1L, 4L, 8L, 11L, 12L, 17L, 6L, 19L, 
-13L, 3L, 5L, 22L, 1L, 26L, 18L, 18L, 8L, 21L, 14L, 27L, 4L, 14L, 
-7L, 6L, 29L, 22L, 16L, 23L, 26L, 3L, 28L, 2L, 13L, 12L, 31L, 
-33L, 35L, 32L, 28L, 33L, 31L, 20L, 9L, 36L, 12L, 29L, 20L, 31L, 
-27L, 17L, 26L, 8L, 15L, 9L, 29L, 9L, 35L, 15L, 11L, 16L, 16L, 
-38L, 31L, 37L, 32L, 24L, 35L, 23L, 23L, 23L, 37L, 10L, 35L, 2L, 
-4L, 5L, 7L, 10L, 13L, 16L, 18L, 20L, 2L, 2L, 7L, 3L, 3L, 25L, 
-17L, 27L, 17L, 7L, 2L, 18L, 27L, 28L, 5L, 7L, 1L, 30L, 29L, 30L, 
-31L, 13L, 5L, 5L, 12L, 14L, 33L, 10L, 25L, 25L, 20L, 12L, 12L, 
-28L, 36L, 15L, 19L, 4L, 7L, 37L, 4L, 27L, 13L, 36L, 36L, 7L, 
-16L, 10L, 32L, 16L, 15L, 23L, 30L, 16L, 34L, 34L, 37L, 35L, 24L, 
-13L, 24L, 26L, 11L, 11L, 38L, 3L, 2L, 2L, 6L, 9L, 14L, 15L, 8L, 
-9L, 14L, 13L, 21L, 23L, 22L, 24L, 8L, 17L, 15L, 20L, 28L, 6L, 
-6L, 19L, 4L, 4L, 22L, 16L, 22L, 22L, 32L, 23L, 21L, 28L, 31L, 
-19L, 34L, 34L, 32L, 26L, 19L, 9L, 33L, 21L, 11L, 11L, 9L, 1L, 
-9L, 32L, 29L, 29L, 31L, 9L, 8L, 8L, 17L, 33L, 38L, 38L, 38L, 
-39L, 23L, 39L, 37L, 10L, 38L, 39L, 25L, 26L, 39L, 24L, 38L, 37L, 
-39L), dim = c(74L, 3L), dimnames = list(NULL, c("V1", "V2", "V3"
-))), vertices = structure(c(1.919, 11.144, 5.425, -1.663, 7.442, 
--6.695, -0.033, -4.232, 21.154, 28.656, 26.039, 24.7, 38.495, 
-22.12, -2.174, 0.293, -11.404, -10.334, 17.513, 11.779, 9.429, 
--1.229, 23.178, 31.624, 38.598, 45.126, -11.158, 12.006, -2.916, 
-0.309, 30.989, 42.613, 23.712, 26.903, 30.351, 7.967, 31.164, 
-31.153, 25.446, -61.424, -56.548, -45.974, -66.275, -66.617, 
--84.518, -78.743, -92.504, -86.822, -90.445, -100.261, -64.495, 
--54.848, -57.949, -109.207, -76.79, -95.804, -88.342, -64.251, 
--69.068, -68.236, -69.708, -76.694, -76.476, -78.494, -64.288, 
--86.863, -61.31, -68.854, -74.483, -79.064, -81.495, -86.376, 
--87.745, -83.035, -109.459, -90.442, -90.17, -80.83, 189.26, 
-207.377, 187.389, 200.772, 215.514, 214.222, 217.531, 215.624, 
-211.211, 205.351, 203.87, 210.062, 195.598, 210.308, 195.291, 
-177.159, 194.172, 210.24, 213.33, 216.294, 216.293, 180.885, 
-163.472, 163.423, 168.801, 186.712, 207.276, 212.506, 190.655, 
-176.78, 204.541, 191.066, 209.147, 206.617, 172.962, 211.961, 
-203.224, 179.055, 170.082), dim = c(39L, 3L)))
-```
+# Create a sample mesh
+mesh <- rgl::icosahedron3d()
 
-
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-mesh <- tmesh3d(
-  vertices = t(as.matrix(mesh_obj$vertices[, 1:3])),
-  indices = t(as.matrix(mesh_obj$faces[, 1:3])),
-  homogeneous = FALSE
-)
-```
-
-```{r}
-# Generate wireframe coordinates using Rvcg-compatible function
-wireframe_coords <- create_wireframe_mesh(mesh)
-
-# Create plot using direct mesh3d object access
-plot_ly() |>
-  add_mesh(
-    name = "Mesh",
-    x = t(mesh$vb[1:3, ])[, 1],
-    y = t(mesh$vb[1:3, ])[, 2],
-    z = t(mesh$vb[1:3, ])[, 3],
-    i = t(mesh$it)[, 1] - 1,
-    j = t(mesh$it)[, 2] - 1,
-    k = t(mesh$it)[, 3] - 1,
-    flatshading = TRUE,
-    showlegend = FALSE,
-    type = "mesh3d"
-    # Removed opacity = 0.3 for solid faces
-  ) |>
-  add_trace(
-    name = "Wireframe",
-    data = wireframe_coords,
-    x = ~ x,
-    y = ~ y,
-    z = ~ z,
-    type = "scatter3d",
-    mode = "lines",
-    line = list(color = "black", width = 3),
-    showlegend = FALSE,
-    hoverinfo = "none"
-  ) |>
-  layout(showlegend = TRUE, scene = list(camera = list(
-    eye = list(x = -1.5, y = 0.2, z = 1.5),
-    # orbital angle
-    up  = list(x = 0, y = 1, z = 0)      # which direction is "up"
-  )))
-```
-
-```{r}
-res <- eam_isotropic_remesh(
+# Perform isotropic remeshing
+result <- eam_isotropic_remesh(
   mesh3d_obj = mesh,
-  target_edge_length = 4,  # 4mm for a 3mm face
-  iterations = 5
+  target_edge_length = 0.5,
+  iterations = 3
 )
 
-remeshed <- res$mesh3d_roi
+# View statistics
+cat("Original vertices:", result$original_vertex_count, "\n")
+cat("Remeshed vertices:", result$roi_vertex_count, "\n")
+cat("Faces:", result$face_count, "\n")
+
+# For interactive visualization, use:
+launch_mesh_viewer()
 ```
 
-```{r}
-# Generate wireframe using Rvcg-compatible function
-wireframe_coords <- create_wireframe_mesh(remeshed)
+## Core Functions
 
-# Plot with corrected mesh3d object access
-plot_ly() |>
-  add_mesh(
-    name = "Remeshed",
-    x = t(remeshed$vb[1:3, ])[, 1],  # Extract vertices from mesh3d object
-    y = t(remeshed$vb[1:3, ])[, 2],
-    z = t(remeshed$vb[1:3, ])[, 3],
-    i = t(remeshed$it)[, 1] - 1,     # Extract faces from mesh3d object and convert to 0-indexed
-    j = t(remeshed$it)[, 2] - 1,
-    k = t(remeshed$it)[, 3] - 1,
-    flatshading = TRUE,
-    showlegend = TRUE,
-    type = "mesh3d"
-  ) |>
-  add_trace(
-    name = "Wireframe",
-    data = wireframe_coords,
-    x = ~ x, y = ~ y, z = ~ z,
-    type = "scatter3d",
-    mode = "lines",
-    line = list(color = "black", width = 1),
-    showlegend = FALSE,
-    hoverinfo = "none"
-  ) |>
-    layout(
-    showlegend = TRUE,
-    scene = list(
-    camera = list(
-      eye = list(x = -1.5, y = 0.2, z = 1.5),   # orbital angle
-      up  = list(x = 0,   y = 1,    z = 0)      # which direction is "up"
-    )))
+### Mesh Processing
+- `eam_isotropic_remesh()` - Isotropic remeshing with ROI optimization
+- `create_wireframe_mesh()` - Generate wireframe visualization data
+
+### Nearest Neighbor Algorithms
+- `n_nearest_neighbors()` - Find n nearest neighbors
+- `fr_nearest_neighbors()` - Fixed radius nearest neighbors
+
+### Statistical Utilities
+- `lognormal_mean()`, `lognormal_var()`, `lognormal_sd()` - Log-normal distribution statistics
+- `pooled_sd()` - Calculate pooled standard deviation
+- `mode()` - Statistical mode
+
+### Data Management
+- `combine_rds_pacing_dir_v2()` - Combine dataframes across pacing directions
+- `create_summary_table()` - Create formatted summary tables
+
+## Interactive Visualization Requirements
+
+For the interactive features, you'll need these additional packages:
+
+```r
+install.packages(c("shiny", "shinydashboard", "plotly", "DT", "htmlwidgets"))
 ```
 
+## System Requirements
+
+- R (>= 4.0.0)
+- For 3D visualization: OpenGL support
+- For interactive features: Modern web browser
+
+## Documentation
+
+Comprehensive documentation is available:
+
+```r
+# Package documentation
+?eiEAM
+
+# Function-specific help
+?eam_isotropic_remesh
+?launch_mesh_viewer
+
+# Or view all documentation
+help(package = "eiEAM")
+```
+
+## Deployed Examples
+
+You can also view live examples without installing the package:
+
+- [Interactive Demo](https://your-shinyapps-url.shinyapps.io/eieam-mesh-viewer/) (Coming soon)
+- [Static Examples Gallery](https://your-github-pages-url.github.io/eiEAM/) (Coming soon)
+
+## Citation
+
+If you use eiEAM in your research, please cite:
+
+```
+Salas J (2025). eiEAM: Electroanatomical Mapping Post-Processing Tools.
+R package version 0.1. https://github.com/yourusername/eiEAM
+```
+
+## License
+
+MIT + file LICENSE
+
+## Author
+
+Jonathan Salas (Jsalas424@gmail.com)
+ORCID: 0009-0001-4508-7336

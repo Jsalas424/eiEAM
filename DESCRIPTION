@@ -20,6 +20,10 @@ Imports:
 Suggests:
     Rvcg,
     plotly,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    shiny,
+    shinydashboard,
+    DT,
+    htmlwidgets
 Config/testthat/edition: 3
 SystemRequirements: For 3D visualization features, OpenGL support may be required
