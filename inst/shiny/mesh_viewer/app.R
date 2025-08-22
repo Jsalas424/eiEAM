@@ -577,7 +577,7 @@ server <- function(input, output, session) {
         values$current_stats <- data.frame(
           Metric = c("Original Vertices", "Original Faces", 
                      "Remeshed Vertices", "Remeshed Faces",
-                     "Vertex Reduction", "Face Change"),
+                     "Vertex Change", "Face Change"),
           Count = c(res$original_vertex_count, 
                     ncol(values$original_mesh$it),
                     res$roi_vertex_count, 
