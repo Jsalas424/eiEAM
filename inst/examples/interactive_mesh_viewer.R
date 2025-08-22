@@ -87,7 +87,6 @@ create_interactive_mesh <- function(mesh,
                                     title = "3D Mesh", 
                                     mesh_color = "lightblue",
                                     wireframe_color = "black",
-                                    opacity = 0.7,
                                     show_wireframe = TRUE) {
   
   # Create base mesh plot
@@ -103,7 +102,6 @@ create_interactive_mesh <- function(mesh,
       flatshading = TRUE,
       showlegend = TRUE,
       type = "mesh3d",
-      opacity = opacity,
       color = I(mesh_color),
       hovertemplate = paste(
         '<b>Mesh Surface</b><br>',
@@ -183,8 +181,7 @@ cat("Generating original mesh visualization...\n")
 p1 <- create_interactive_mesh(
   mesh, 
   title = "Original Mesh",
-  mesh_color = "lightblue",
-  opacity = 0.7
+  mesh_color = "lightblue"
 )
 
 # Perform remeshing with different parameters
@@ -212,8 +209,7 @@ cat(sprintf("  ROI faces: %d\n\n", res_4mm$face_count))
 p2 <- create_interactive_mesh(
   res_4mm$mesh3d_roi, 
   title = "Remeshed (4mm edge length)",
-  mesh_color = "tomato",
-  opacity = 0.7
+  mesh_color = "tomato"
 )
 
 # Perform another remeshing with finer resolution
@@ -234,8 +230,7 @@ cat(sprintf("  ROI faces: %d\n\n", res_2mm$face_count))
 p3 <- create_interactive_mesh(
   res_2mm$mesh3d_roi, 
   title = "Remeshed (2mm edge length)",
-  mesh_color = "lightgreen",
-  opacity = 0.7
+  mesh_color = "lightgreen"
 )
 
 # Create comparison plots
