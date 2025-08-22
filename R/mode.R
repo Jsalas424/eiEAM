@@ -1,4 +1,4 @@
-#' Statistical Mode
+#' Statistical Mode, not to be confused with base::mode()
 #'
 #' @description Return the most frequent value (statistical mode) in a vector.
 #'
@@ -12,12 +12,12 @@
 #' @examples
 #' # Create sample data
 #' x <- c(1, 2, 2, 3, 4, 2, 5)
-#' mode(x)
+#' Mode(x)
 #'
 #' # Works with character/factor too
 #' y <- c("a", "b", "a", "c")
-#' mode(y)
-mode <- function(x) {
+#' Mode(y)
+Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
 }
