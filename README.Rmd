@@ -1,4 +1,26 @@
-Old Mc'Tschabrunn had a farm. 
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# eiEAM
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Old Mc'Tschabrunn had a farm.
 
 This package contains functions for post-processing of electroanatomic mapping data.
 
