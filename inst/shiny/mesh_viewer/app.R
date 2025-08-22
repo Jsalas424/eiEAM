@@ -1,15 +1,17 @@
 # eiEAM Interactive Mesh Viewer - Shiny Application
 
 # Load required libraries
-library(shiny)
-library(shinydashboard)
-library(plotly)
-library(DT)
-library(eiEAM)
-library(rgl)
-library(Rvcg)
+suppressPackageStartupMessages({
+  library(shiny)
+  library(shinydashboard)
+  library(plotly)
+  library(DT)
+  library(eiEAM)
+  library(rgl)
+  library(Rvcg)
+})
 
-# Function to load mesh from file (copied from interactive_mesh_viewer.R)
+# Function to load mesh from file
 load_example_mesh <- function() {
   # Try to load from package data first
   mesh_file <- system.file("extdata/example_mesh.rds", package = "eiEAM")
@@ -391,7 +393,7 @@ ui <- dashboardPage(
                     tags$li(paste("eiEAM Version:", packageVersion("eiEAM"))),
                     tags$li("Author: Jonathan Salas"),
                     tags$li("License: MIT"),
-                    tags$li(HTML("Repository: <a href='https://github.com/yourusername/eiEAM' target='_blank'>GitHub</a>"))
+                    tags$li(HTML("Repository: <a href='https://github.com/Jsalas424/eiEAM' target='_blank'>GitHub</a>"))
                   ),
                   
                   h4("Citation"),
@@ -460,28 +462,36 @@ server <- function(input, output, session) {
     return(colors[ifelse(type == "primary", 1, 2)])
   }
   
-  # Function to create wireframe coordinates
-  create_wireframe_mesh <- function(mesh) {
-    # Get edges from triangular faces
-    edges <- rbind(
-      cbind(t(mesh$vb[1:3, mesh$it[1, ]]), t(mesh$vb[1:3, mesh$it[2, ]])),
-      cbind(t(mesh$vb[1:3, mesh$it[2, ]]), t(mesh$vb[1:3, mesh$it[3, ]])),
-      cbind(t(mesh$vb[1:3, mesh$it[3, ]]), t(mesh$vb[1:3, mesh$it[1, ]]))
-    )
-    
-    # Create line segments for wireframe
-    wireframe_data <- data.frame(
-      x = c(rbind(edges[, 1], edges[, 4], NA)),
-      y = c(rbind(edges[, 2], edges[, 5], NA)),
-      z = c(rbind(edges[, 3], edges[, 6], NA))
-    )
-    
-    return(wireframe_data)
+  # Function to create an empty plot
+  create_empty_plot <- function(title) {
+    plot_ly() |> 
+      add_trace(
+        x = numeric(0),
+        y = numeric(0),
+        z = numeric(0),
+        type = "scatter3d",
+        mode = "none",
+        showlegend = FALSE
+      ) |> 
+      layout(
+        title = list(text = title, x = 0.5, xanchor = "center"),
+        scene = list(
+          xaxis = list(title = "X (mm)", showgrid = FALSE, zeroline = FALSE, visible = FALSE),
+          yaxis = list(title = "Y (mm)", showgrid = FALSE, zeroline = FALSE, visible = FALSE),
+          zaxis = list(title = "Z (mm)", showgrid = FALSE, zeroline = FALSE, visible = FALSE),
+          camera = list(
+            eye = list(x = -1.5, y = 0.2, z = 1.5),
+            up = list(x = 0, y = 1, z = 0)
+          ),
+          aspectmode = "cube"
+        ),
+        showlegend = FALSE
+      )
   }
   
   # Function to create mesh plot
   create_mesh_plot <- function(mesh, title, color = NULL) {
-    if (is.null(mesh)) return(plotly_empty())
+    if (is.null(mesh)) return(create_empty_plot(title))
     
     if (is.null(color)) {
       color <- get_mesh_color(input$global_colorscheme, "primary")
@@ -511,12 +521,12 @@ server <- function(input, output, session) {
       )
     
     if (input$global_wireframe) {
-      wireframe_coords <- create_wireframe_mesh(mesh)
+      wireframe_coords <- eiEAM::create_wireframe_mesh(mesh)
       p <- p |> 
         add_trace(
           name = "Wireframe",
           data = wireframe_coords,
-          x = ~ x, y = ~ y, z = ~ z,
+          x = ~x, y = ~y, z = ~z,
           type = "scatter3d",
           mode = "lines",
           line = list(color = "black", width = 1),
@@ -527,12 +537,12 @@ server <- function(input, output, session) {
     
     p |> 
       layout(
-        title = title,
+        title = list(text = title, x = 0.5, xanchor = "center"),
         showlegend = TRUE,
         scene = list(
           camera = list(
             eye = list(x = -1.5, y = 0.2, z = 1.5),
-            up  = list(x = 0, y = 1, z = 0)
+            up = list(x = 0, y = 1, z = 0)
           ),
           xaxis = list(title = "X (mm)"),
           yaxis = list(title = "Y (mm)"),
@@ -559,6 +569,11 @@ server <- function(input, output, session) {
         
         incProgress(0.6, detail = "Finalizing...")
         
+        # Verify remeshing output
+        if (is.null(res$mesh3d_roi) || is.null(res$roi_vertex_count) || is.null(res$face_count)) {
+          stop("Remeshing output is invalid or incomplete")
+        }
+        
         values$remeshed_mesh <- res$mesh3d_roi
         
         # Update stats
@@ -577,13 +592,15 @@ server <- function(input, output, session) {
         incProgress(0.3, detail = "Complete!")
         
         showNotification("Remeshing completed successfully!", 
-                         type = "success", 
+                         type = "message", 
                          duration = 3)
         
         # Switch to remeshed tab
         updateTabsetPanel(session, "mesh_tabs", selected = "Remeshed")
         
       }, error = function(e) {
+        # Log the error for debugging
+        cat("Remeshing error:", e$message, "\n")
         showNotification(paste("Remeshing failed:", e$message), 
                          type = "error", 
                          duration = 5)
@@ -604,27 +621,38 @@ server <- function(input, output, session) {
       for (i in seq_along(edge_lengths)) {
         incProgress(1/n_configs, detail = paste("Edge length:", edge_lengths[i], "mm"))
         
-        res <- eam_isotropic_remesh(
-          mesh3d_obj = values$original_mesh,
-          target_edge_length = edge_lengths[i],
-          iterations = input$iterations,
-          feature_angle_deg = input$feature_angle
-        )
-        
-        results[[i]] <- data.frame(
-          EdgeLength = edge_lengths[i],
-          Vertices = res$roi_vertex_count,
-          Faces = res$face_count,
-          VertexRatio = round(res$roi_vertex_count / res$original_vertex_count, 3),
-          FaceRatio = round(res$face_count / ncol(values$original_mesh$it), 3)
-        )
+        tryCatch({
+          res <- eam_isotropic_remesh(
+            mesh3d_obj = values$original_mesh,
+            target_edge_length = edge_lengths[i],
+            iterations = input$iterations,
+            feature_angle_deg = input$feature_angle
+          )
+          
+          results[[i]] <- data.frame(
+            EdgeLength = edge_lengths[i],
+            Vertices = res$roi_vertex_count,
+            Faces = res$face_count,
+            VertexRatio = round(res$roi_vertex_count / res$original_vertex_count, 3),
+            FaceRatio = round(res$face_count / ncol(values$original_mesh$it), 3)
+          )
+        }, error = function(e) {
+          cat("Batch remeshing error for edge length", edge_lengths[i], ":", e$message, "\n")
+          results[[i]] <- data.frame(
+            EdgeLength = edge_lengths[i],
+            Vertices = NA,
+            Faces = NA,
+            VertexRatio = NA,
+            FaceRatio = NA
+          )
+        })
       }
     })
     
     values$batch_results <- do.call(rbind, results)
     
     showNotification("Batch processing completed!", 
-                     type = "success", 
+                     type = "message", 
                      duration = 3)
   })
   
@@ -659,12 +687,7 @@ server <- function(input, output, session) {
   
   output$remeshed_plot <- renderPlotly({
     if (is.null(values$remeshed_mesh)) {
-      plotly_empty() |> 
-        layout(
-          title = "Click 'Perform Remeshing' to generate",
-          xaxis = list(visible = FALSE),
-          yaxis = list(visible = FALSE)
-        )
+      create_empty_plot("Click 'Perform Remeshing' to generate")
     } else {
       create_mesh_plot(values$remeshed_mesh, 
                        paste("Remeshed (", input$edge_length, "mm)"),
@@ -674,21 +697,20 @@ server <- function(input, output, session) {
   
   output$comparison_plot <- renderPlotly({
     if (is.null(values$remeshed_mesh)) {
-      plotly_empty() |> 
-        layout(title = "Remeshing required for comparison")
+      create_empty_plot("Remeshing required for comparison")
     } else {
       p1 <- create_mesh_plot(values$original_mesh, "Original")
       p2 <- create_mesh_plot(values$remeshed_mesh, "Remeshed",
                              get_mesh_color(input$global_colorscheme, "secondary"))
       
       subplot(p1, p2, nrows = 1, shareX = TRUE, shareY = TRUE) |> 
-        layout(title = "Mesh Comparison")
+        layout(title = list(text = "Mesh Comparison", x = 0.5, xanchor = "center"))
     }
   })
   
   output$batch_comparison <- renderPlotly({
     if (is.null(values$batch_results)) {
-      plotly_empty()
+      create_empty_plot("Run batch processing to see results")
     } else {
       plot_ly(values$batch_results) |> 
         add_trace(x = ~EdgeLength, y = ~Vertices, 
@@ -698,7 +720,7 @@ server <- function(input, output, session) {
                   type = 'scatter', mode = 'lines+markers',
                   name = 'Faces', yaxis = 'y2') |> 
         layout(
-          title = "Batch Processing Results",
+          title = list(text = "Batch Processing Results", x = 0.5, xanchor = "center"),
           xaxis = list(title = "Edge Length (mm)"),
           yaxis = list(title = "Vertex Count"),
           yaxis2 = list(
