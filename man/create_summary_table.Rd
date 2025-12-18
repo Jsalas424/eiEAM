@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_summary_table.R
 \name{create_summary_table}
 \alias{create_summary_table}
-\title{Create a continuous summary table (optionally stratified)}
+\title{Create a Formatted Summary Table}
 \usage{
 create_summary_table(
   data,
@@ -13,64 +13,137 @@ create_summary_table(
   include_overall,
   title = NULL,
   caption = NULL,
-  decimals = NULL
+  digits = NULL,
+  grand_overall = NULL,
+  grand_label = "**All**"
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame containing the variables to summarize.}
 
-\item{var_name}{\code{NULL} or a character vector of column names to summarize.
-If \code{NULL}, all numeric columns (excluding \code{by}/\code{strata}) are summarized.}
+\item{var_name}{Character vector of variable names to include in the summary.
+If \code{NULL} (default), all columns except \code{by} and \code{strata}
+are summarized.}
 
-\item{by}{Optional grouping variable (bare name or string) to create
-column-wise strata in the summary.}
+\item{by}{Bare column name or character string specifying the grouping variable.
+Summary statistics will be stratified by this variable. Default is \code{NULL}.}
 
-\item{strata}{Optional variable (bare name or string). When supplied, the
-data are split by \code{strata} and the summary is built \strong{within each stratum}
-using \code{gtsummary::tbl_strata()}.}
+\item{strata}{Bare column name or character string specifying the stratification
+variable. Creates separate tables for each stratum level. Default is \code{NULL}.}
 
-\item{include_n}{Logical; add N per column. If missing, defaults to \code{TRUE}
-when \code{by} or \code{strata} is provided, otherwise \code{FALSE}.}
+\item{include_n}{Logical indicating whether to include a column showing the
+number of non-missing observations. If not specified, defaults to \code{TRUE}
+when \code{by} or \code{strata} is provided, \code{FALSE} otherwise.}
 
-\item{include_overall}{Logical; add an "Overall" column. If missing,
-defaults to \code{TRUE} when \code{by} is provided, otherwise \code{FALSE}. Ignored
-when \code{by} is \code{NULL}.}
+\item{include_overall}{Logical indicating whether to include an "Overall" column
+when \code{by} is specified. If not specified, defaults to \code{TRUE} when
+\code{by} is provided.}
 
-\item{title}{Optional title for the \code{gt} table (markdown supported).}
+\item{title}{Optional character string for table title. Markdown formatting is
+supported via \code{\link[gt]{md}}. Default is \code{NULL}.}
 
-\item{caption}{Optional caption for the \code{gt} table (markdown supported).}
+\item{caption}{Optional character string for table caption. Markdown formatting is
+supported via \code{\link[gt]{md}}. Default is \code{NULL}.}
 
-\item{decimals}{Optional control for number of decimal places displayed in the outputs}
+\item{digits}{Optional specification for the number of decimal places used to
+round continuous statistics. Must be either:
+\itemize{
+\item A single integer: applied to all statistics (mean, SD, median, IQR,
+min, max)
+\item A vector of length 2: first value for mean/SD, second for
+median/IQR/min/max
+}
+When \code{NULL} (default), gtsummary determines appropriate rounding
+automatically.}
+
+\item{grand_overall}{Logical indicating whether to add a grand overall column
+when both \code{by} and \code{strata} are specified. If \code{NULL} (default),
+automatically set to \code{TRUE} when both \code{by} and \code{strata} are
+provided, \code{FALSE} otherwise.}
+
+\item{grand_label}{Character string for the grand overall column header when
+\code{grand_overall = TRUE}. Markdown is supported. Default is \code{"**All**"}.}
 }
 \value{
-A \code{gt_tbl} object.
+A \code{gt_tbl} object that can be further customized with \pkg{gt}
+functions.
 }
 \description{
-Build a \code{gtsummary} table summarizing numeric variables, optionally
-stratified by a grouping variable (\code{by}) and/or split into per-stratum
-tables via \code{tbl_strata()} (\code{strata}). The output is returned as a \code{gt}
-table. Defaults:
-\itemize{
-\item If \code{by} is supplied, \code{include_overall} defaults to \strong{TRUE} (adds an
-"Overall" column within each table).
-\item If either \code{by} or \code{strata} is supplied, \code{include_n} defaults to \strong{TRUE}
-(adds column Ns; with \code{strata}, counts are \strong{within each stratum}).
+This function wraps \code{\link[gtsummary]{tbl_summary}} to generate a summary
+table with optional stratification, grouping, and overall summaries. Continuous
+variables are summarized by mean (SD), median \link{IQR}, and range, while
+categorical variables are summarized as counts (percentages).
 }
+\section{Handling Missing Values with Stratification}{
+When using stratification (\code{strata} argument), the function automatically
+sets \code{missing = "always"} to ensure missing value rows remain properly
+associated with their parent variables during table merging operations. This
+prevents missing rows from becoming disassociated and appearing at the bottom
+of the table. When no stratification is used, the function uses the gtsummary
+default behavior (\code{missing = "ifany"}), which displays missing rows only
+when missing values are present.
 }
+
+\section{Factor Handling}{
+Character variables are automatically converted to factors with missing values
+coded as "Unknown". Factor levels are dropped to show only observed values.
+\code{difftime} objects are converted to numeric for summary calculations.
+}
+
 \examples{
-\dontrun{
-# Basic overall (no by/strata): no overall/no N by default
-create_summary_table(mtcars)
+\donttest{
+library(dplyr)
 
-# By present -> overall & N default to TRUE
-create_summary_table(mtcars, by = cyl)
+# Create example data
+set.seed(123)
+df <- data.frame(
+  group   = sample(c("A", "B"), 100, replace = TRUE),
+  strata  = sample(c("X", "Y"), 100, replace = TRUE),
+  age     = rnorm(100, mean = 50, sd = 10),
+  weight  = rnorm(100, mean = 70, sd = 15),
+  sex     = sample(c("Male", "Female"), 100, replace = TRUE),
+  outcome = sample(c("Yes", "No"), 100, replace = TRUE)
+)
 
-# With strata -> overall & N are applied within each stratum
-create_summary_table(mtcars, by = cyl, strata = gear)
+# Example 1: Basic summary table
+create_summary_table(df, var_name = c("age", "weight", "sex"))
 
-# Manually specify variables to summarize
-create_summary_table(mtcars, var_name = c("mpg","hp"), by = cyl,
-                     title = "**Engine summary by cyl**")
+# Example 2: Summary by group
+create_summary_table(df, var_name = c("age", "sex"), by = group)
+
+# Example 3: Stratified table (automatically uses missing = "always")
+create_summary_table(
+  df,
+  var_name = c("age", "weight"),
+  by = group,
+  strata = strata
+)
+
+# Example 4: Custom decimal places
+create_summary_table(
+  df,
+  var_name = "age",
+  by = group,
+  digits = c(1, 0),
+  title = "Age Summary by Group"
+)
+
+# Example 5: Grand overall column
+create_summary_table(
+  df,
+  var_name = c("age", "sex"),
+  by = group,
+  strata = strata,
+  grand_overall = TRUE,
+  grand_label = "**All Participants**"
+)
 }
-
+}
+\seealso{
+\itemize{
+\item \code{\link[gtsummary]{tbl_summary}} for the underlying summary function
+\item \code{\link[gtsummary]{tbl_strata}} for stratified table creation
+\item \code{\link[gtsummary]{tbl_merge}} for merging tables
+\item \code{\link[gt]{gt}} for additional table customization
+}
 }

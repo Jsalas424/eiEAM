@@ -1,9 +1,19 @@
-^renv$
-^renv\.lock$
-^eiEAM\.tools\.Rproj$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^\.git$
-^\.gitignore$
-^README\.Rmd$
 ^LICENSE\.md$
+^README\.Rmd$
+^data-raw$
+^\.github$
+^codecov\.yml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.lintr$
+^\.pre-commit-config\.yaml$
+
+# Generated HTML files from mesh viewer
+^eiEAM_.*\.html$
+
+# renv directory
+^renv$
+^renv\.lock$

@@ -18,40 +18,52 @@
 #' \dontrun{
 #' # Launch the mesh viewer
 #' launch_mesh_viewer()
-#' 
+#'
 #' # Launch on a specific port
 #' launch_mesh_viewer(port = 3838)
-#' 
+#'
 #' # Launch without opening browser
 #' launch_mesh_viewer(launch.browser = FALSE)
 #' }
-launch_mesh_viewer <- function(launch.browser = TRUE, 
-                               port = NULL, 
+launch_mesh_viewer <- function(launch.browser = TRUE,
+                               port = NULL,
                                host = "127.0.0.1") {
   
   # Check for required packages
   required_packages <- c("shiny", "shinydashboard", "plotly", "DT")
-  missing_packages <- required_packages[!required_packages %in% installed.packages()[,"Package"]]
+  missing_packages <- required_packages[
+    !required_packages %in% utils::installed.packages()[, "Package"]
+  ]
   
-  if(length(missing_packages) > 0) {
-    stop(paste("Please install missing packages:", 
-               paste(missing_packages, collapse = ", "),
-               "\nRun: install.packages(c('", 
-               paste(missing_packages, collapse = "', '"), "'))"))
+  if (length(missing_packages) > 0) {
+    stop(
+      paste(
+        "Please install missing packages:",
+        paste(missing_packages, collapse = ", "),
+        "\nRun: install.packages(c('",
+        paste(missing_packages, collapse = "', '"), "'))"
+      ),
+      call. = FALSE
+    )
   }
   
   # Find the app directory
   app_dir <- system.file("shiny/mesh_viewer", package = "eiEAM")
   
   if (app_dir == "") {
-    stop("Could not find the mesh_viewer app. Please reinstall the eiEAM package.")
+    stop(
+      "Could not find the mesh_viewer app. Please reinstall the eiEAM package.",
+      call. = FALSE
+    )
   }
   
   # Launch the app
-  shiny::runApp(app_dir, 
-                launch.browser = launch.browser,
-                port = port,
-                host = host)
+  shiny::runApp(
+    app_dir,
+    launch.browser = launch.browser,
+    port = port,
+    host = host
+  )
 }
 
 #' Generate Interactive Mesh HTML Files
@@ -72,27 +84,33 @@ launch_mesh_viewer <- function(launch.browser = TRUE,
 #' \dontrun{
 #' # Generate default visualizations
 #' generate_mesh_html()
-#' 
+#'
 #' # Generate with custom edge lengths
 #' generate_mesh_html(edge_lengths = c(1, 3, 5, 7))
-#' 
+#'
 #' # Save to specific directory
 #' generate_mesh_html(output_dir = "~/Desktop/mesh_visualizations")
 #' }
-generate_mesh_html <- function(output_dir = getwd(), 
+generate_mesh_html <- function(output_dir = getwd(),
                                edge_lengths = c(2, 4, 6),
                                open_browser = TRUE) {
   
   # Check for required packages
   if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
-    stop("Package 'htmlwidgets' is required. Install with: install.packages('htmlwidgets')")
+    stop(
+      "Package 'htmlwidgets' is required. Install with: install.packages('htmlwidgets')",
+      call. = FALSE
+    )
   }
   
   # Source the interactive viewer script
   script_path <- system.file("examples/interactive_mesh_viewer.R", package = "eiEAM")
   
   if (script_path == "") {
-    stop("Could not find interactive_mesh_viewer.R. Please reinstall the eiEAM package.")
+    stop(
+      "Could not find interactive_mesh_viewer.R. Please reinstall the eiEAM package.",
+      call. = FALSE
+    )
   }
   
   # Set output directory temporarily
@@ -104,7 +122,7 @@ generate_mesh_html <- function(output_dir = getwd(),
   source(script_path, local = TRUE)
   
   if (open_browser && interactive()) {
-    browseURL(file.path(output_dir, "eiEAM_mesh_comparison.html"))
+    utils::browseURL(file.path(output_dir, "eiEAM_mesh_comparison.html"))
   }
   
   invisible(NULL)
