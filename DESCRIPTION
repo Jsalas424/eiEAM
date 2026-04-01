@@ -1,6 +1,6 @@
 Package: eiEAM
 Title: Electroanatomical Mapping Post-Processing Tools
-Version: 0.1
+Version: 0.2
 Authors@R: 
     person("Jonathan", "Salas", , "Jsalas424@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0009-0001-4508-7336"))
 Description: eiEAM - Old Mc'Tschabrunn had a farm, eee eye eee eye mapping techniques emphasizing high-density acquisition has led to EP suffering from "Big Data" challenges. This library includes tools for accurate and reproducible analysis of high-density electroanatomic mapping (EAM) data including nearest neighbors co-registration, mesh reprocessing, and statistical analyses.
@@ -12,11 +12,14 @@ Imports:
     dbscan,
     dplyr,
     forcats,
+    ggplot2,
     gtsummary,
     gt,
+    lubridate,
     purrr,
     rgl,
-    rlang
+    rlang,
+    sessioninfo
 Suggests:
     cli,
     Rvcg,
@@ -25,7 +28,8 @@ Suggests:
     shiny,
     shinydashboard,
     DT,
-    htmlwidgets
+    htmlwidgets,
+    ragg
 Config/testthat/edition: 3
 SystemRequirements: For 3D visualization features, OpenGL support may be required
 Depends: 
