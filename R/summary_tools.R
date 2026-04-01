@@ -84,53 +84,60 @@ build_summary_tbl <- function(data,
                               has_strata,
                               include_overall,
                               include_n,
-                              digits_spec) {
+                              digits_spec,
+                              statistic = NULL) {
   # Define summary statistics (Unicode escape for plus-minus symbol)
   stats_strings <- c(
     "{mean} \u00B1 {sd}",
     "{median} [{p25}-{p75}]",
     "{min}, {max}"
   )
-
+  
+  stat_spec <- if (!is.null(statistic)) {
+    statistic
+  } else {
+    list(
+      gtsummary::all_continuous2() ~ stats_strings,
+      gtsummary::all_categorical() ~ "{n} ({p}%)"
+    )
+  }
+  
   cols <- c(if (has_by) rlang::as_name(by_quo), var_name)
   df <- dplyr::select(data, dplyr::all_of(cols))
-
+  
   # Automatically determine missing argument behavior:
   # - Use "always" when strata is present to prevent row disassociation
   # - Use gtsummary default "ifany" otherwise
   missing_arg <- if (has_strata) "always" else "ifany"
-
+  
   base_args <- list(
     data = df,
     type = list(
       dplyr::where(is.numeric) ~ "continuous2",
       dplyr::where(~ !is.numeric(.x)) ~ "categorical"
     ),
-    statistic = list(
-      gtsummary::all_continuous2() ~ stats_strings,
-      gtsummary::all_categorical() ~ "{n} ({p}%)"
-    ),
+    statistic = stat_spec,
     missing = missing_arg,
     missing_text = "Unknown"
   )
-
+  
   if (!is.null(digits_spec)) {
     base_args$digits <- digits_spec
   }
-
+  
   if (has_by) {
     base_args$by <- rlang::as_label(by_quo)
   }
-
+  
   tbl <- do.call(gtsummary::tbl_summary, base_args)
-
+  
   if (include_overall && has_by) {
     tbl <- gtsummary::add_overall(tbl)
   }
   if (include_n) {
     tbl <- gtsummary::add_n(tbl)
   }
-
+  
   tbl
 }
 
@@ -193,6 +200,12 @@ build_summary_tbl <- function(data,
 #'   provided, \code{FALSE} otherwise.
 #' @param grand_label Character string for the grand overall column header when
 #'   \code{grand_overall = TRUE}. Markdown is supported. Default is \code{"**All**"}.
+#'   
+#' @param statistic Optional list specifying summary statistics to display,
+#'   passed directly to \code{\link[gtsummary]{tbl_summary}}. When \code{NULL}
+#'   (default), uses mean ± SD, median [IQR], and min/max for continuous
+#'   variables and n (%) for categorical variables. See
+#'   \code{\link[gtsummary]{tbl_summary}} for syntax details.
 #'
 #' @return A \code{gt_tbl} object that can be further customized with \pkg{gt}
 #'   functions.
@@ -266,7 +279,8 @@ create_summary_table <- function(data,
                                  caption = NULL,
                                  digits = NULL,
                                  grand_overall = NULL,
-                                 grand_label = "**All**") {
+                                 grand_label = "**All**",
+                                 statistic = NULL) {
   # Check required packages
   if (!requireNamespace("gtsummary", quietly = TRUE)) {
     stop("Package 'gtsummary' is required but not installed.", call. = FALSE)
@@ -286,13 +300,13 @@ create_summary_table <- function(data,
   if (!requireNamespace("forcats", quietly = TRUE)) {
     stop("Package 'forcats' is required but not installed.", call. = FALSE)
   }
-
+  
   # Capture enquoted arguments
   by_quo <- rlang::enquo(by)
   strata_quo <- rlang::enquo(strata)
   has_by <- !rlang::quo_is_null(by_quo)
   has_strata <- !rlang::quo_is_null(strata_quo)
-
+  
   # Set defaults for include_n and include_overall
   if (missing(include_overall)) {
     include_overall <- has_by
@@ -303,7 +317,7 @@ create_summary_table <- function(data,
   if (is.null(grand_overall)) {
     grand_overall <- has_by && has_strata
   }
-
+  
   # Determine variables to summarize
   if (is.null(var_name)) {
     drop <- unique(c(
@@ -312,14 +326,14 @@ create_summary_table <- function(data,
     ))
     var_name <- setdiff(names(data), drop)
   }
-
+  
   if (length(var_name) == 0L) {
     stop(
       "No variables selected. Supply var_name or ensure data has columns beyond by/strata.",
       call. = FALSE
     )
   }
-
+  
   # Validate digits argument
   if (!is.null(digits) && !(length(digits) %in% c(1L, 2L))) {
     stop(
@@ -327,13 +341,13 @@ create_summary_table <- function(data,
       call. = FALSE
     )
   }
-
+  
   # Build digits specification
   digits_spec <- build_digits_spec(digits)
-
+  
   # Preprocess data
   data_processed <- prep_summary_data(data)
-
+  
   # Create tables based on stratification
   if (has_strata && grand_overall) {
     tbl_all <- build_summary_tbl(
@@ -344,19 +358,20 @@ create_summary_table <- function(data,
       has_strata = has_strata,
       include_overall = include_overall,
       include_n = include_n,
-      digits_spec = digits_spec
+      digits_spec = digits_spec,
+      statistic = statistic
     )
-
+    
     strata_col <- rlang::as_name(strata_quo)
     strata_vals <- data_processed[[strata_col]]
-
+    
     strata_levels <- if (is.factor(strata_vals)) {
       levels(strata_vals)[levels(strata_vals) %in% unique(strata_vals)]
     } else {
       unique(strata_vals)
     }
     strata_levels <- strata_levels[!is.na(strata_levels)]
-
+    
     tbl_list <- purrr::map(
       strata_levels,
       ~ build_summary_tbl(
@@ -367,10 +382,11 @@ create_summary_table <- function(data,
         has_strata = has_strata,
         include_overall = include_overall,
         include_n = include_n,
-        digits_spec = digits_spec
+        digits_spec = digits_spec,
+        statistic = statistic
       )
     )
-
+    
     tbl_out <- gtsummary::tbl_merge(
       tbls = c(list(tbl_all), tbl_list),
       tab_spanner = c(grand_label, paste0("**", strata_levels, "**"))
@@ -387,7 +403,8 @@ create_summary_table <- function(data,
         has_strata = has_strata,
         include_overall = include_overall,
         include_n = include_n,
-        digits_spec = digits_spec
+        digits_spec = digits_spec,
+        statistic = statistic
       )
     )
   } else {
@@ -399,19 +416,20 @@ create_summary_table <- function(data,
       has_strata = has_strata,
       include_overall = include_overall,
       include_n = include_n,
-      digits_spec = digits_spec
+      digits_spec = digits_spec,
+      statistic = statistic
     )
   }
-
+  
   # Convert to gt table
   gt_tbl <- gtsummary::as_gt(tbl_out)
-
+  
   if (!is.null(title)) {
     gt_tbl <- gt::tab_header(gt_tbl, title = gt::md(title))
   }
   if (!is.null(caption)) {
     gt_tbl <- gt::tab_caption(gt_tbl, caption = gt::md(caption))
   }
-
+  
   gt_tbl
 }

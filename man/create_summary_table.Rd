@@ -15,7 +15,8 @@ create_summary_table(
   caption = NULL,
   digits = NULL,
   grand_overall = NULL,
-  grand_label = "**All**"
+  grand_label = "**All**",
+  statistic = NULL
 )
 }
 \arguments{
@@ -63,6 +64,12 @@ provided, \code{FALSE} otherwise.}
 
 \item{grand_label}{Character string for the grand overall column header when
 \code{grand_overall = TRUE}. Markdown is supported. Default is \code{"**All**"}.}
+
+\item{statistic}{Optional list specifying summary statistics to display,
+passed directly to \code{\link[gtsummary]{tbl_summary}}. When \code{NULL}
+(default), uses mean ± SD, median \link{IQR}, and min/max for continuous
+variables and n (\%) for categorical variables. See
+\code{\link[gtsummary]{tbl_summary}} for syntax details.}
 }
 \value{
 A \code{gt_tbl} object that can be further customized with \pkg{gt}
