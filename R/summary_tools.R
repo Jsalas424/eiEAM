@@ -43,11 +43,11 @@ build_digits_spec <- function(digits) {
   if (is.null(digits)) {
     return(NULL)
   }
-  
+
   if (length(digits) == 1L) {
     digits <- rep(digits, 2L)
   }
-  
+
   list(
     gtsummary::all_continuous2() ~ list(
       mean = digits[1],
@@ -91,15 +91,15 @@ build_summary_tbl <- function(data,
     "{median} [{p25}-{p75}]",
     "{min}, {max}"
   )
-  
+
   cols <- c(if (has_by) rlang::as_name(by_quo), var_name)
   df <- dplyr::select(data, dplyr::all_of(cols))
-  
+
   # Automatically determine missing argument behavior:
   # - Use "always" when strata is present to prevent row disassociation
   # - Use gtsummary default "ifany" otherwise
   missing_arg <- if (has_strata) "always" else "ifany"
-  
+
   base_args <- list(
     data = df,
     type = list(
@@ -113,24 +113,24 @@ build_summary_tbl <- function(data,
     missing = missing_arg,
     missing_text = "Unknown"
   )
-  
+
   if (!is.null(digits_spec)) {
     base_args$digits <- digits_spec
   }
-  
+
   if (has_by) {
     base_args$by <- rlang::as_label(by_quo)
   }
-  
+
   tbl <- do.call(gtsummary::tbl_summary, base_args)
-  
+
   if (include_overall && has_by) {
     tbl <- gtsummary::add_overall(tbl)
   }
   if (include_n) {
     tbl <- gtsummary::add_n(tbl)
   }
-  
+
   tbl
 }
 
@@ -205,6 +205,7 @@ build_summary_tbl <- function(data,
 #'   \item \code{\link[gt]{gt}} for additional table customization
 #' }
 #'
+#' @importFrom lubridate period
 #' @export
 #'
 #' @examples
@@ -285,13 +286,13 @@ create_summary_table <- function(data,
   if (!requireNamespace("forcats", quietly = TRUE)) {
     stop("Package 'forcats' is required but not installed.", call. = FALSE)
   }
-  
+
   # Capture enquoted arguments
   by_quo <- rlang::enquo(by)
   strata_quo <- rlang::enquo(strata)
   has_by <- !rlang::quo_is_null(by_quo)
   has_strata <- !rlang::quo_is_null(strata_quo)
-  
+
   # Set defaults for include_n and include_overall
   if (missing(include_overall)) {
     include_overall <- has_by
@@ -302,7 +303,7 @@ create_summary_table <- function(data,
   if (is.null(grand_overall)) {
     grand_overall <- has_by && has_strata
   }
-  
+
   # Determine variables to summarize
   if (is.null(var_name)) {
     drop <- unique(c(
@@ -311,14 +312,14 @@ create_summary_table <- function(data,
     ))
     var_name <- setdiff(names(data), drop)
   }
-  
+
   if (length(var_name) == 0L) {
     stop(
       "No variables selected. Supply var_name or ensure data has columns beyond by/strata.",
       call. = FALSE
     )
   }
-  
+
   # Validate digits argument
   if (!is.null(digits) && !(length(digits) %in% c(1L, 2L))) {
     stop(
@@ -326,13 +327,13 @@ create_summary_table <- function(data,
       call. = FALSE
     )
   }
-  
+
   # Build digits specification
   digits_spec <- build_digits_spec(digits)
-  
+
   # Preprocess data
   data_processed <- prep_summary_data(data)
-  
+
   # Create tables based on stratification
   if (has_strata && grand_overall) {
     tbl_all <- build_summary_tbl(
@@ -345,17 +346,17 @@ create_summary_table <- function(data,
       include_n = include_n,
       digits_spec = digits_spec
     )
-    
+
     strata_col <- rlang::as_name(strata_quo)
     strata_vals <- data_processed[[strata_col]]
-    
+
     strata_levels <- if (is.factor(strata_vals)) {
       levels(strata_vals)[levels(strata_vals) %in% unique(strata_vals)]
     } else {
       unique(strata_vals)
     }
     strata_levels <- strata_levels[!is.na(strata_levels)]
-    
+
     tbl_list <- purrr::map(
       strata_levels,
       ~ build_summary_tbl(
@@ -369,7 +370,7 @@ create_summary_table <- function(data,
         digits_spec = digits_spec
       )
     )
-    
+
     tbl_out <- gtsummary::tbl_merge(
       tbls = c(list(tbl_all), tbl_list),
       tab_spanner = c(grand_label, paste0("**", strata_levels, "**"))
@@ -401,16 +402,16 @@ create_summary_table <- function(data,
       digits_spec = digits_spec
     )
   }
-  
+
   # Convert to gt table
   gt_tbl <- gtsummary::as_gt(tbl_out)
-  
+
   if (!is.null(title)) {
     gt_tbl <- gt::tab_header(gt_tbl, title = gt::md(title))
   }
   if (!is.null(caption)) {
     gt_tbl <- gt::tab_caption(gt_tbl, caption = gt::md(caption))
   }
-  
+
   gt_tbl
 }
