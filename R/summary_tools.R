@@ -43,11 +43,11 @@ build_digits_spec <- function(digits) {
   if (is.null(digits)) {
     return(NULL)
   }
-
+  
   if (length(digits) == 1L) {
     digits <- rep(digits, 2L)
   }
-
+  
   list(
     gtsummary::all_continuous2() ~ list(
       mean = digits[1],
@@ -56,7 +56,8 @@ build_digits_spec <- function(digits) {
       p25 = digits[2],
       p75 = digits[2],
       min = digits[2],
-      max = digits[2]
+      max = digits[2],
+      p5 = digits[2]
     )
   )
 }
